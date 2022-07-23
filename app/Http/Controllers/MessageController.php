@@ -51,8 +51,7 @@ class MessageController extends Controller
     /**
      * Consume first resource in storage.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function consume()
     {
