@@ -7,34 +7,31 @@ use Illuminate\Support\Facades\Storage;
 
 class Message
 {
-    public static function queue($array = false): array|Collection
+    public static function first(): string|null
     {
-        $queueString = Storage::get(config('queue.filename'));
+        $paths = Queue::paths();
 
-        if (strlen($queueString) === 0) {
-            return $array ? [] : collect();
+        if (empty($paths)) {
+            return null;
         }
 
-        $queueArray = preg_split("/\r\n|\n|\r/", $queueString);
-
-        if ($array) {
-            return $queueArray;
-        }
-
-        $queueCollection = collect();
-
-        foreach ($queueArray as $queue) {
-            $queueCollection->push(json_decode($queue));
-        }
-
-        return $queueCollection->sortBy('datetime')->values();
+        return $paths[0];
     }
 
-    public static function total(): int
+    public static function all(): array
     {
-        $queueArray = self::queue(true);
+        $paths = Queue::paths();
 
-        return count($queueArray);
+        if (empty($paths)) {
+            return [];
+        }
+
+        $messages = [];
+        foreach ($paths as $path) {
+            $messages[] = json_decode(Storage::get($path), true);
+        }
+
+        return $messages;
     }
 
     public static function store(string $message, $datetime = null): bool
@@ -49,33 +46,32 @@ class Message
 
         $datetime ?? now()->toIso8601String();
 
+        $queue = Queue::get();
         $message = [
             'datetime' => $datetime,
-            'message' => $message,
+            'message' => $message
         ];
 
-        Storage::append(config('queue.filename'), json_encode($message));
-
-        return true;
+        if (Storage::put(Queue::path($queue['index'] + 1), json_encode($message))) {
+            Queue::set();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public static function consume(): string|null
     {
-        $queueArray = self::queue(true);
+        $message = self::first();
 
-        if (empty($queueArray)) {
+        if (empty($message)) {
             return null;
         }
 
-        $message = $queueArray[0];
+        $content = Storage::get($message);
+        Storage::delete($message);
+        Queue::get();
 
-        unset($queueArray[0]);
-
-        Storage::delete(config('queue.filename'));
-        foreach ($queueArray as $queue) {
-            Storage::append(config('queue.filename'), $queue);
-        }
-
-        return $message;
+        return $content;
     }
 }

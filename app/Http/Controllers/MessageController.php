@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\MessageStoreRequest;
 use App\Models\Message;
+use App\Models\Queue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as ResponseCode;
@@ -17,7 +18,7 @@ class MessageController extends Controller
      */
     public function index()
     {
-        return response(Message::queue(), ResponseCode::HTTP_OK);
+        return response(Message::all(), ResponseCode::HTTP_OK);
     }
     /**
      * Display total number of the resource.
@@ -26,7 +27,7 @@ class MessageController extends Controller
      */
     public function total()
     {
-        return response(Message::total(), ResponseCode::HTTP_OK);
+        return response(Queue::get()['total'], ResponseCode::HTTP_OK);
     }
 
     /**

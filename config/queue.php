@@ -15,6 +15,7 @@ return [
 
     'default' => env('QUEUE_CONNECTION', 'sync'),
     'filename' => env('QUEUE_FILENAME', 'queue.txt'),
+    'folder' => env('QUEUE_FOLDER', 'messages'),
 
     /*
     |--------------------------------------------------------------------------
