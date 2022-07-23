@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Message;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,11 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        for ($i = 1; $i <= 10; $i++) {
+            $datetime = now()->addSecond($i)->toIso8601String();
+            $message = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus feugiat odio ac enim vulputate, at fermentum felis consectetur. Suspendisse nec est tempus nam.';
+            Message::store($message, $datetime);
+        }
     }
 }
