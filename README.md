@@ -1,64 +1,114 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Message Queue App
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+---
 
-## About Laravel
+### How to run on Docker
+1. clone the repo
+2. cd into the repo
+3. run `.\vendor\bin\sail up`
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### How to run seeder (for testing)
+1. run `php artisan db:seed`
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## API
 
-## Learning Laravel
+**Headers** (apply to all API route):
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Key          | Value            |
+|--------------|------------------|
+| Accept       | application/json |
+| Content-Type | application/json |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. Get all messages
+HTTP API to get all SMS messages in the queue in JSON format. <br>
+**Method:** `GET` <br>
+**Url:** `localhost/api/messages` <br>
+**Body:** none <br>
 
-## Laravel Sponsors
+**Response Example:**
+> ```
+> [
+>     {
+>         "datetime": "2022-07-23T08:27:29+00:00",
+>         "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus feugiat odio ac enim vulputate, at fermentum felis consectetur. Suspendisse nec est tempus nam."
+>     },
+>     {
+>         "datetime": "2022-07-23T08:27:30+00:00",
+>         "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus feugiat odio ac enim vulputate, at fermentum felis consectetur. Suspendisse nec est tempus nam."
+>     },
+>     {
+>         "datetime": "2022-07-23T08:27:31+00:00",
+>         "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus feugiat odio ac enim vulputate, at fermentum felis consectetur. Suspendisse nec est tempus nam."
+>     }
+> ]
+> ```
+> **Status Code:** 200 OK
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+### 2. Get total messages
+HTTP API to get the total number of messages in the queue. <br>
+**Method:** `GET` <br>
+**Url:** `localhost/api/messages/total` <br>
+**Body:** none <br>
 
-### Premium Partners
+**Response Example:**
+> ```
+> 3
+> ```
+> **Status Code:** 200 OK
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+### 3. Queue message
+HTTP API to insert an SMS Message in the queue. <br>
+**Method:** `POST` <br>
+**Url:** `localhost/api/messages/store` <br>
+**Body:** `JSON` <br>
 
-## Contributing
+| Key      | Type   | Condition                         |
+|----------|--------|-----------------------------------|
+| message  | string | required & maximum 160 characters |
+| datetime | string | optional; ISO8601 format          |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Body Example:**
+```
+{
+"datetime": "2022-07-21T19:04:29+00:00",
+"message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus feugiat odio ac enim vulputate, at fermentum felis consectetur. Suspendisse nec est tempus nam."
+}
+```
 
-## Code of Conduct
+**Response Example:**
+> ```
+> Queue the message success.
+> ```
+> **Status Code:** 201 Created
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+> ```
+> Queue the message fail.
+> ```
+> **Status Code:** 422 Unprocessable Content 
+ 
+### 4. Consume a message
+HTTP API to consume an SMS Message from the queue and returns it in JSON format. <br>
+**Method:** `GET` <br>
+**Url:** `localhost/api/messages/consume` <br>
+**Body:** none <br>
 
-## Security Vulnerabilities
+**Response Example:**
+> ```
+> {
+>     "datetime": "2022-07-21T19:04:29+00:00",
+>     "message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus feugiat odio ac enim vulputate, at fermentum felis consectetur. Suspendisse nec est tempus nam."
+> }
+> ```
+> **Status Code:** 202 Accepted
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+> ```
+> Consume message from queue fail.
+> ```
+> **Status Code:** 422 Unprocessable Content
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Caveat
+Performance not scalable because each message consume will rewrite entire file (`queue.txt`) to remove it from the queue.
