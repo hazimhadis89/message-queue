@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Storage;
 
 class Message
 {
+    /**
+     * Return first Message in Queue
+     *
+     * @return string|null
+     */
     public static function first(): string|null
     {
         $paths = Queue::paths();
@@ -18,6 +23,11 @@ class Message
         return $paths[0];
     }
 
+    /**
+     * Return all Message in Queue
+     *
+     * @return array
+     */
     public static function all(): array
     {
         $paths = Queue::paths();
@@ -34,6 +44,13 @@ class Message
         return $messages;
     }
 
+    /**
+     * Store new Message in Queue
+     *
+     * @param string $message
+     * @param $datetime
+     * @return bool
+     */
     public static function store(string $message, $datetime = null): bool
     {
         if (empty($message)) {
@@ -60,6 +77,11 @@ class Message
         }
     }
 
+    /**
+     * Consume (retrieve & remove) Message from Queue
+     *
+     * @return string|null
+     */
     public static function consume(): string|null
     {
         $message = self::first();
